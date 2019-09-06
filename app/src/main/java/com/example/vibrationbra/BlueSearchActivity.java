@@ -66,6 +66,7 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
     LinearLayout mLltConnected;
 
     private ProgressDialog progressDialog;
+    private boolean isConnecting = false;
 
     private Animation operatingAnim;
 
@@ -168,6 +169,10 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
      * @param mac
      */
     private void connect(final BleDevice bleDevice, String mac) {
+        //当前有正在连接得蓝牙，直接返回，一次只能有一个处于连接中
+        if (isConnecting) {
+            return;
+        }
         BleDevice bleConnect = BlueUtils.getConnectedDevice();
 
         //当前连接设备已经连接
@@ -184,7 +189,6 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         BlueUtils.disconnect(bleConnect);
-                        setCurConnectDevice();
                     }
                 });
                 return;
@@ -199,19 +203,24 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
         BleGattCallback callback = new BleGattCallback() {
             @Override
             public void onStartConnect() {
+                isConnecting = true;
                 progressDialog.show();
             }
 
             @Override
             public void onConnectFail(BleDevice bleDevice, BleException exception) {
+                isConnecting = false;
                 //startScan();
-                progressDialog.dismiss();
+                if (progressDialog != null) {
+                    progressDialog.dismiss();
+                }
                 ToastUtils.showLong(R.string.connect_fail);
 
             }
 
             @Override
             public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
+                isConnecting = false;
                 progressDialog.dismiss();
                 //存储连接成功得设备
                 AppParams.setDeviceBean(new DeviceBean(bleDevice.getName(), bleDevice.getMac()));
@@ -225,8 +234,11 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
 
             @Override
             public void onDisConnected(boolean isActiveDisConnected, BleDevice bleDevice, BluetoothGatt gatt, int status) {
+                isConnecting = false;
                 //特指连接后再断开的情况
-                progressDialog.dismiss();
+                if (progressDialog != null) {
+                    progressDialog.dismiss();
+                }
                 //设置连接过得设备
                 setCurConnectDevice();
                 // 调用 isconnect 主动断开
@@ -246,6 +258,9 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
      * 设置已经配对过得设备
      */
     private void setCurConnectDevice() {
+        if (mLltConnected == null) {
+            return;
+        }
         //配对过得设备
         BleDevice bleDevice = BlueUtils.getConnectedDevice();
         if (bleDevice == null) {
@@ -254,7 +269,7 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
                 mLltConnected.setVisibility(View.GONE);
             } else {
                 mLltConnected.setVisibility(View.VISIBLE);
-                setConnectHis(AppParams.sDeviceBean.getName(), AppParams.sDeviceBean.getMac(), R.string.no_connect, R.color.holo_light);
+                setConnectHis(AppParams.sDeviceBean.getName(), AppParams.sDeviceBean.getMac(), R.color.black, R.string.no_connect, R.color.holo_light);
             }
         } else {
             //当前已经有连接设备
@@ -262,6 +277,7 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
 
             setConnectHis(bleDevice.getName()
                     , bleDevice.getMac()
+                    , BlueUtils.getDeviceConnected() ? R.color.colorAccent : R.color.black
                     , BlueUtils.getDeviceConnected() ? R.string.connected : R.string.no_connect
                     , BlueUtils.getDeviceConnected() ? R.color.colorAccent : R.color.holo_light);
         }
@@ -273,14 +289,22 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
      *
      * @param name
      * @param mac
-     * @param p
-     * @param p2
+     * @param color
+     * @param status
+     * @param statusColor
      */
-    private void setConnectHis(String name, String mac, int p, int p2) {
+    private void setConnectHis(String name, String mac, int color, int status, int statusColor) {
+        color = getResources().getColor(color);
+        mImgBlue.setColorFilter(color);
+
         mTxtName.setText(name);
+        mTxtName.setTextColor(color);
+
         mTxtMac.setText(mac);
-        mTvStatus.setText(p);
-        mTvStatus.setTextColor(getResources().getColor(p2));
+        mTxtMac.setTextColor(color);
+
+        mTvStatus.setText(status);
+        mTvStatus.setTextColor(getResources().getColor(statusColor));
         mTvStatus.setVisibility(View.VISIBLE);
     }
 

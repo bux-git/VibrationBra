@@ -17,7 +17,7 @@ public class Constant {
     //广播名称
     public static final String[] BLUE_NAME = {""};
     //连接后断开自动重连
-    public static final boolean AUTO_CONNECT = true;
+    public static final boolean AUTO_CONNECT = false;
     //扫描超时
     public static final long SCAN_TIME_OUT = 10*1000;
 

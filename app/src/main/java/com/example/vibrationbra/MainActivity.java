@@ -1,5 +1,7 @@
 package com.example.vibrationbra;
 
+import android.content.res.ColorStateList;
+import android.os.Build;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -71,11 +73,25 @@ public class MainActivity extends BaseSysBleCheckActivity implements View.OnClic
     }
 
     private void setBlueData() {
+        if (mTvBlue == null) {
+            return;
+        }
+        //已经连接状态
         if (BlueUtils.getDeviceConnected()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                ColorStateList csl = getResources().getColorStateList(R.color.colorAccent);
+                mTvBlue.setCompoundDrawableTintList(csl);
+            }
+
             mTvBlue.setText(BlueUtils.getConnectedDevice().getName());
             mTvBlue.setTextColor(getResources().getColor(R.color.colorAccent));
             mFltCover.setVisibility(View.GONE);
         } else {
+            //未连接
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                ColorStateList csl = getResources().getColorStateList(R.color.black);
+                mTvBlue.setCompoundDrawableTintList(csl);
+            }
             mTvBlue.setText(R.string.no_connect);
             mTvBlue.setTextColor(getResources().getColor(R.color.holo_light));
             mFltCover.setVisibility(View.VISIBLE);
