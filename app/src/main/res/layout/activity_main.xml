@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingStart="24dp"
+    android:paddingTop="16dp"
+    android:paddingEnd="24dp"
+    tools:context=".MainActivity">
+
+    <ImageView
+        android:id="@+id/iv_batter"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@drawable/ic_batter_full"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_blue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawableLeft="@drawable/ic_blue_tooth"
+        android:text="未连接"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <RadioGroup
+        android:id="@+id/rg_pos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="26dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_batter">
+
+        <RadioButton
+            android:id="@+id/rb_left"
+            style="@style/pos_style"
+            android:text="单边1" />
+
+        <RadioButton
+            android:id="@+id/rb_all"
+            style="@style/pos_style"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:text="双边" />
+
+        <RadioButton
+            android:id="@+id/rb_right"
+            style="@style/pos_style"
+            android:text="单边2" />
+    </RadioGroup>
+
+
+    <TextView
+        android:id="@+id/tv_center"
+        style="@style/circle_textview_style"
+        android:layout_marginTop="150dp"
+        android:text="循环模式"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/rg_pos" />
+
+    <TextView
+        android:id="@+id/tv_mode1"
+        style="@style/circle_textview_style"
+        android:text="捶打"
+        app:layout_constraintCircle="@+id/tv_center"
+        app:layout_constraintCircleAngle="0"
+        tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/tv_mode2"
+        style="@style/circle_textview_style"
+        android:text="挤压"
+        app:layout_constraintCircle="@+id/tv_center"
+        app:layout_constraintCircleAngle="72"
+        tools:ignore="MissingConstraints" />
+
+
+    <TextView
+        android:id="@+id/tv_mode3"
+        style="@style/circle_textview_style"
+        android:text="提伸"
+        app:layout_constraintCircle="@+id/tv_center"
+        app:layout_constraintCircleAngle="144"
+        tools:ignore="MissingConstraints" />
+
+
+    <TextView
+        android:id="@+id/tv_mode4"
+        style="@style/circle_textview_style"
+        android:text="推拿"
+        app:layout_constraintCircle="@+id/tv_center"
+        app:layout_constraintCircleAngle="216"
+        tools:ignore="MissingConstraints" />
+
+    <TextView
+        android:id="@+id/tv_mode5"
+        style="@style/circle_textview_style"
+        android:text="揉捏"
+        app:layout_constraintCircle="@+id/tv_center"
+        app:layout_constraintCircleAngle="288"
+        tools:ignore="MissingConstraints" />
+
+    <com.example.common.widget.SeekLayout
+        android:id="@+id/skl_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_huge"
+        app:layout_constraintTop_toBottomOf="@id/tv_mode4" />
+
+    <com.example.common.widget.SeekLayout
+        android:id="@+id/slt_gear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_larger"
+        app:layout_constraintTop_toBottomOf="@id/skl_time" />
+
+    <FrameLayout
+        android:id="@+id/flt_cover"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_blue" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

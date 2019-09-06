@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<paths>
+    <!--对应的文件夹是 Context.getCacheDir().-->
+    <cache-path
+        name="internal"
+        path="cache"/>
+    <!--对应的文件夹是 Context.getFilesDir().-->
+    <files-path
+        name="name"
+        path="path"/>
+    <!--对应的文件夹是 Context.getExternalFilesDir(null).-->
+    <external-files-path
+        name="name"
+        path="path"/>
+    <!--对应的文件夹是 Context.getExternalCacheDir().-->
+    <external-cache-path
+        name="name"
+        path="path"/>
+    <!--对应的文件夹是 Environment.getExternalStorageDirectory(). download下载目录-->
+    <external-path
+        name="external"
+        path="Download"/>
+
+    <external-path
+        name="external"
+        path="path"/>
+</paths>

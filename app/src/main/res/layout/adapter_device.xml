@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rlt_device_item"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:background="@drawable/item_selector"
+    android:paddingStart="@dimen/spacing_normal"
+    android:clickable="true"
+    android:paddingEnd="@dimen/spacing_normal">
+
+    <ImageView
+        android:id="@+id/img_blue"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_blue_remote" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginStart="10dp"
+        android:layout_toEndOf="@id/img_blue"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/txt_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="2dp"
+            android:textSize="@dimen/font_normal"
+            tools:text="蓝牙名称" />
+
+        <TextView
+            android:id="@+id/txt_mac"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textSize="@dimen/font_smaller"
+            tools:text="mac地址" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:gravity="center"
+        android:text="@string/connected"
+        android:textColor="@color/colorPrimary"
+        android:textSize="@dimen/font_smaller"
+        android:visibility="gone" />
+
+
+</RelativeLayout>
