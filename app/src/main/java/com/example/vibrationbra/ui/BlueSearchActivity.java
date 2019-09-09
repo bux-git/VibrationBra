@@ -1,7 +1,6 @@
-package com.example.vibrationbra;
+package com.example.vibrationbra.ui;
 
 import android.app.ProgressDialog;
-import android.bluetooth.BluetoothGatt;
 import android.content.DialogInterface;
 import android.text.TextUtils;
 import android.view.View;
@@ -12,20 +11,18 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.blankj.utilcode.util.ToastUtils;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
-import com.clj.fastble.BleManager;
-import com.clj.fastble.callback.BleGattCallback;
 import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.data.BleDevice;
-import com.clj.fastble.exception.BleException;
-import com.clj.fastble.scan.BleScanRuleConfig;
-import com.example.common.util.observer.Observer;
-import com.example.common.util.observer.ObserverManager;
+import com.example.vibrationbra.R;
 import com.example.vibrationbra.base.BaseSysBleCheckActivity;
-import com.example.vibrationbra.bean.DeviceBean;
 import com.example.vibrationbra.localdata.AppParams;
+import com.example.vibrationbra.localdata.EventType;
+import com.example.vibrationbra.util.BlueUtils;
+import com.hwangjr.rxbus.annotation.Subscribe;
+import com.hwangjr.rxbus.annotation.Tag;
+import com.hwangjr.rxbus.thread.EventThread;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +39,7 @@ import butterknife.OnClick;
  * @author：bux on 2019/9/6 10:36
  * @email: 471025316@qq.com
  */
-public class BlueSearchActivity extends BaseSysBleCheckActivity implements Observer {
+public class BlueSearchActivity extends BaseSysBleCheckActivity {
     private static final String TAG = "BlueSearchActivity";
     @BindView(R.id.toolbar)
     Toolbar mToolbar;
@@ -72,6 +69,10 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
 
     BaseQuickAdapter<BleDevice, BaseViewHolder> mAdapter;
     List<BleDevice> mBleDevices;
+    private BleScanCallback mBleScanCall;
+
+    //已经连接的设备
+    private BleDevice bleConnect;
 
     @Override
     protected int setLayoutId() {
@@ -80,7 +81,6 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
 
     @Override
     protected void init() {
-        ObserverManager.getInstance().addObserver(this);
         initView();
         initRecyclerView();
         setCurConnectDevice();
@@ -92,7 +92,7 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
         switch (view.getId()) {
             case R.id.llt_search:
                 if (isSearchIng()) {
-                    BlueUtils.cancelScan();
+                    BlueUtils.sUtils.cancelScan();
                 } else {
                     startSearchBlue();
                 }
@@ -108,9 +108,8 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
 
     @Override
     protected void onDestroy() {
-        ObserverManager.getInstance().deleteObserver(this);
         if (isSearchIng()) {
-            BlueUtils.cancelScan();
+            BlueUtils.sUtils.cancelScan();
         }
         super.onDestroy();
     }
@@ -173,7 +172,7 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
         if (isConnecting) {
             return;
         }
-        BleDevice bleConnect = BlueUtils.getConnectedDevice();
+        bleConnect = BlueUtils.sUtils.getConnectedDevice();
 
         //当前连接设备已经连接
         if (bleConnect != null) {
@@ -188,7 +187,7 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
                 }, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        BlueUtils.disconnect(bleConnect);
+                        BlueUtils.sUtils.disconnect(bleConnect);
                     }
                 });
                 return;
@@ -197,60 +196,9 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
 
         //停止搜索
         stopScanLoading();
-        BlueUtils.cancelScan();
+        BlueUtils.sUtils.cancelScan();
+        BlueUtils.sUtils.connectBle(bleDevice,mac);
 
-
-        BleGattCallback callback = new BleGattCallback() {
-            @Override
-            public void onStartConnect() {
-                isConnecting = true;
-                progressDialog.show();
-            }
-
-            @Override
-            public void onConnectFail(BleDevice bleDevice, BleException exception) {
-                isConnecting = false;
-                //startScan();
-                if (progressDialog != null) {
-                    progressDialog.dismiss();
-                }
-                ToastUtils.showLong(R.string.connect_fail);
-
-            }
-
-            @Override
-            public void onConnectSuccess(BleDevice bleDevice, BluetoothGatt gatt, int status) {
-                isConnecting = false;
-                progressDialog.dismiss();
-                //存储连接成功得设备
-                AppParams.setDeviceBean(new DeviceBean(bleDevice.getName(), bleDevice.getMac()));
-                //设置连接过得设备
-                setCurConnectDevice();
-                mBleDevices.remove(bleDevice);
-                mAdapter.notifyDataSetChanged();
-                //同时只连接一个设备 将原来连接设备断开
-                BlueUtils.disconnect(bleConnect);
-            }
-
-            @Override
-            public void onDisConnected(boolean isActiveDisConnected, BleDevice bleDevice, BluetoothGatt gatt, int status) {
-                isConnecting = false;
-                //特指连接后再断开的情况
-                if (progressDialog != null) {
-                    progressDialog.dismiss();
-                }
-                //设置连接过得设备
-                setCurConnectDevice();
-                // 调用 isconnect 主动断开
-                if (isActiveDisConnected) {
-                    //ToastUtils.showLong(R.string.active_disconnected);
-                } else {
-                    ToastUtils.showLong(R.string.disconnected);
-                }
-                ObserverManager.getInstance().notifyObserver(bleDevice);
-            }
-        };
-        BlueUtils.connect(bleDevice, mac, callback);
     }
 
 
@@ -262,7 +210,7 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
             return;
         }
         //配对过得设备
-        BleDevice bleDevice = BlueUtils.getConnectedDevice();
+        BleDevice bleDevice = BlueUtils.sUtils.getConnectedDevice();
         if (bleDevice == null) {
             //历史配对记录
             if (AppParams.sDeviceBean == null) {
@@ -277,9 +225,9 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
 
             setConnectHis(bleDevice.getName()
                     , bleDevice.getMac()
-                    , BlueUtils.getDeviceConnected() ? R.color.colorAccent : R.color.black
-                    , BlueUtils.getDeviceConnected() ? R.string.connected : R.string.no_connect
-                    , BlueUtils.getDeviceConnected() ? R.color.colorAccent : R.color.holo_light);
+                    , BlueUtils.sUtils.getDeviceConnected() ? R.color.colorAccent : R.color.black
+                    , BlueUtils.sUtils.getDeviceConnected() ? R.string.connected : R.string.no_connect
+                    , BlueUtils.sUtils.getDeviceConnected() ? R.color.colorAccent : R.color.holo_light);
         }
     }
 
@@ -316,54 +264,45 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
         checkBlue(new OnCheckResult() {
             @Override
             public void onSuccess() {
-                BleScanRuleConfig scanRuleConfig = new BleScanRuleConfig.Builder()
-                        .setServiceUuids(Constant.UUID_SEARCH)      // 只扫描指定的服务的设备，可选
-                        .setDeviceName(true, Constant.BLUE_NAME)   // 只扫描指定广播名的设备，可选
-                        .setDeviceMac("")                  // 只扫描指定mac的设备，可选
-                        .setAutoConnect(Constant.AUTO_CONNECT)      // 连接时的autoConnect参数，可选，默认false
-                        .setScanTimeOut(Constant.SCAN_TIME_OUT)              // 扫描超时时间，可选，默认10秒
-                        .build();
-                BleManager.getInstance().initScanRule(scanRuleConfig);
-                //开始扫描
-                startScan();
-            }
-        });
+                if (mBleScanCall == null) {
+                    mBleScanCall = new BleScanCallback() {
+                        @Override
+                        public void onScanStarted(boolean success) {
+                            mBleDevices.clear();
+                            mAdapter.notifyDataSetChanged();
+                            startScanLoading();
+                        }
 
-    }
+                        @Override
+                        public void onLeScan(BleDevice bleDevice) {
+                            super.onLeScan(bleDevice);
+                        }
 
-    private void startScan() {
-        BleManager.getInstance().scan(new BleScanCallback() {
-            @Override
-            public void onScanStarted(boolean success) {
-                mBleDevices.clear();
-                mAdapter.notifyDataSetChanged();
-                startScanLoading();
-            }
+                        @Override
+                        public void onScanning(BleDevice bleDevice) {
+                            if (mIvLoading != null) {
+                                if (BlueUtils.sUtils.isConnect(bleDevice)) {
+                                    return;
+                                }
+                                mBleDevices.add(bleDevice);
+                                mAdapter.notifyDataSetChanged();
+                            }
+                        }
 
-            @Override
-            public void onLeScan(BleDevice bleDevice) {
-                super.onLeScan(bleDevice);
-            }
+                        @Override
+                        public void onScanFinished(List<BleDevice> scanResultList) {
+                            stopScanLoading();
 
-            @Override
-            public void onScanning(BleDevice bleDevice) {
-                if (mIvLoading != null) {
-                    if (BlueUtils.isConnect(bleDevice)) {
-                        return;
-                    }
-                    mBleDevices.add(bleDevice);
-                    mAdapter.notifyDataSetChanged();
+
+                        }
+                    };
                 }
-            }
-
-            @Override
-            public void onScanFinished(List<BleDevice> scanResultList) {
-                stopScanLoading();
-
-
+                BlueUtils.sUtils.scanBlue(mBleScanCall);
             }
         });
+
     }
+
 
     private void stopScanLoading() {
         if (mIvLoading != null) {
@@ -386,8 +325,49 @@ public class BlueSearchActivity extends BaseSysBleCheckActivity implements Obser
         return mTvScan.getText().equals(getString(R.string.stop_scan));
     }
 
-    @Override
-    public void disConnected(BleDevice bleDevice) {
-
+    @Subscribe(
+            thread = EventThread.MAIN_THREAD,
+            tags = {@Tag(EventType.BLE_START_CONNECT)})
+    public void onStartConnect(Object o) {
+        isConnecting = true;
+        progressDialog.show();
     }
+
+    @Subscribe(
+            thread = EventThread.MAIN_THREAD,
+            tags = {@Tag(EventType.BLE_START_FAIL)})
+    public void onConnectFail(BleDevice bleDevice) {
+        isConnecting = false;
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
+    }
+
+    @Subscribe(
+            thread = EventThread.MAIN_THREAD,
+            tags = {@Tag(EventType.BLE_START_SUCCESS)})
+    public void onConnectSuccess(BleDevice bleDevice) {
+        isConnecting = false;
+        progressDialog.dismiss();
+        //设置连接过得设备
+        setCurConnectDevice();
+        mBleDevices.remove(bleDevice);
+        mAdapter.notifyDataSetChanged();
+        //同时只连接一个设备 将原来连接设备断开
+        BlueUtils.sUtils.disconnect(bleConnect);
+    }
+
+    @Subscribe(
+            thread = EventThread.MAIN_THREAD,
+            tags = {@Tag(EventType.BLE_DIS_CONNECTION)})
+    public void onDisConnected(BleDevice bleDevice) {
+        isConnecting = false;
+        //特指连接后再断开的情况
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
+        //设置连接过得设备
+        setCurConnectDevice();
+    }
+
 }

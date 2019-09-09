@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.vibrationbra.MyApplication;
+import com.hwangjr.rxbus.RxBus;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,6 +39,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        RxBus.get().register(this);
         mContext = this;
         setContentView(setLayoutId());
         mUnbinder = ButterKnife.bind(this);
@@ -62,6 +64,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        RxBus.get().unregister(this);
         if (mUnbinder != Unbinder.EMPTY) {
             mUnbinder.unbind();
         }

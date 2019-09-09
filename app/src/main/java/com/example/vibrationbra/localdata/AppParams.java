@@ -4,7 +4,7 @@ import android.text.TextUtils;
 
 import com.example.common.sp.SPUtils;
 import com.example.vibrationbra.MyApplication;
-import com.example.vibrationbra.bean.Control;
+import com.example.vibrationbra.bean.ControlBean;
 import com.example.vibrationbra.bean.DeviceBean;
 
 
@@ -19,7 +19,7 @@ public class AppParams {
     private static SPUtils sp;
 
     private static final String CONTROL_KEY = "CONTROL_KEY";
-    public static Control sControl;
+    public static ControlBean sControlBean;
 
     private static final String DEVICE_KEY = "DEVICE_KEY";
     public static DeviceBean sDeviceBean;
@@ -30,23 +30,23 @@ public class AppParams {
         initDeviceBean();
     }
 
-    public static void setControl(Control control) {
-        if (control == null) {
-            control = new Control();
+    public static void setControlBean(ControlBean controlBean) {
+        if (controlBean == null) {
+            controlBean = new ControlBean();
         }
-        sControl = control;
-        sp.put(CONTROL_KEY, MyApplication.getGson().toJson(control));
+        sControlBean = controlBean;
+        sp.put(CONTROL_KEY, MyApplication.getGson().toJson(controlBean));
 
     }
 
     private static void initControl() {
-        if (sControl == null) {
+        if (sControlBean == null) {
             String json = sp.getString(CONTROL_KEY, "");
             if (TextUtils.isEmpty(json)) {
-                sControl = new Control();
-                setControl(sControl);
+                sControlBean = new ControlBean();
+                setControlBean(sControlBean);
             } else {
-                sControl = MyApplication.getGson().fromJson(json, Control.class);
+                sControlBean = MyApplication.getGson().fromJson(json, ControlBean.class);
             }
         }
     }

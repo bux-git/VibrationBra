@@ -1,4 +1,4 @@
-package com.example.vibrationbra;
+package com.example.vibrationbra.localdata;
 
 import java.util.UUID;
 
@@ -20,6 +20,8 @@ public class Constant {
     public static final boolean AUTO_CONNECT = false;
     //扫描超时
     public static final long SCAN_TIME_OUT = 10*1000;
+    //发送操作命令 时间间隔 MS
+    public static final int CONTROL_INTERVAL=100;
 
     //头码状态
     public static final int HEAD_CODE = 0XAA;

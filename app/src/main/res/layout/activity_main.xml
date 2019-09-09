@@ -7,24 +7,15 @@
     android:paddingStart="24dp"
     android:paddingTop="16dp"
     android:paddingEnd="24dp"
-    tools:context=".MainActivity">
+    tools:context=".ui.MainActivity">
+
 
     <ImageView
         android:id="@+id/iv_batter"
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:src="@drawable/ic_batter_full"
+        android:src="@drawable/battery_level_list"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/tv_blue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:drawableStart="@drawable/ic_blue_tooth"
-        android:text="未连接"
-        android:drawableTint="@color/colorAccent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
 
@@ -58,6 +49,15 @@
 
 
     <TextView
+        android:id="@+id/tv_blue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawableStart="@drawable/ic_blue_tooth"
+        android:text="未连接"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
         android:id="@+id/tv_center"
         style="@style/circle_textview_style"
         android:layout_marginTop="150dp"
@@ -73,6 +73,7 @@
         app:layout_constraintCircle="@+id/tv_center"
         app:layout_constraintCircleAngle="0"
         tools:ignore="MissingConstraints" />
+
 
     <TextView
         android:id="@+id/tv_mode2"
@@ -90,7 +91,6 @@
         app:layout_constraintCircle="@+id/tv_center"
         app:layout_constraintCircleAngle="144"
         tools:ignore="MissingConstraints" />
-
 
     <TextView
         android:id="@+id/tv_mode4"
@@ -130,5 +130,4 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_blue" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

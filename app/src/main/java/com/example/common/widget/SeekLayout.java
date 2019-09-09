@@ -14,6 +14,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.vibrationbra.R;
+import com.example.vibrationbra.localdata.Constant;
 
 import androidx.annotation.Nullable;
 
@@ -198,7 +199,7 @@ public class SeekLayout extends LinearLayout implements View.OnClickListener {
         Message message = mHandler.obtainMessage();
         message.what = 1;
         message.arg1 = progress;
-        mHandler.sendMessageDelayed(message, 300);
+        mHandler.sendMessageDelayed(message, Constant.CONTROL_INTERVAL);
     }
 
     public interface OnProgressChangeLister {

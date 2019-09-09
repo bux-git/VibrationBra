@@ -1,7 +1,10 @@
-package com.example.vibrationbra;
+package com.example.vibrationbra.ui;
 
+import android.annotation.SuppressLint;
 import android.content.res.ColorStateList;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -10,15 +13,21 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.clj.fastble.data.BleDevice;
-import com.example.common.util.observer.Observer;
-import com.example.common.util.observer.ObserverManager;
 import com.example.common.widget.SeekLayout;
+import com.example.vibrationbra.R;
 import com.example.vibrationbra.base.BaseSysBleCheckActivity;
 import com.example.vibrationbra.localdata.AppParams;
+import com.example.vibrationbra.localdata.Constant;
+import com.example.vibrationbra.localdata.EventType;
+import com.example.vibrationbra.util.BlueUtils;
+import com.example.vibrationbra.util.Control;
+import com.hwangjr.rxbus.annotation.Subscribe;
+import com.hwangjr.rxbus.annotation.Tag;
+import com.hwangjr.rxbus.thread.EventThread;
 
 import butterknife.BindView;
 
-public class MainActivity extends BaseSysBleCheckActivity implements View.OnClickListener, Observer {
+public class MainActivity extends BaseSysBleCheckActivity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
     @BindView(R.id.iv_batter)
     ImageView mIvBatter;
@@ -59,51 +68,22 @@ public class MainActivity extends BaseSysBleCheckActivity implements View.OnClic
 
     @Override
     protected void init() {
-        ObserverManager.getInstance().addObserver(this);
+        mFltCover.setVisibility(View.GONE);
         //初始化蓝牙设备
-        BlueUtils.initGlobal();
+        BlueUtils.instance();
+        BlueUtils.sUtils.initGlobal();
         setDeviceData();
         setListener();
+        mIvBatter.setImageLevel(3);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        setBlueData();
-    }
-
-    private void setBlueData() {
-        if (mTvBlue == null) {
-            return;
-        }
-        //已经连接状态
-        if (BlueUtils.getDeviceConnected()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                ColorStateList csl = getResources().getColorStateList(R.color.colorAccent);
-                mTvBlue.setCompoundDrawableTintList(csl);
-            }
-
-            mTvBlue.setText(BlueUtils.getConnectedDevice().getName());
-            mTvBlue.setTextColor(getResources().getColor(R.color.colorAccent));
-            mFltCover.setVisibility(View.GONE);
-        } else {
-            //未连接
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                ColorStateList csl = getResources().getColorStateList(R.color.black);
-                mTvBlue.setCompoundDrawableTintList(csl);
-            }
-            mTvBlue.setText(R.string.no_connect);
-            mTvBlue.setTextColor(getResources().getColor(R.color.holo_light));
-            mFltCover.setVisibility(View.VISIBLE);
-        }
-    }
 
     /**
      * 设置设备参数
      */
     private void setDeviceData() {
         //设置方向
-        switch (AppParams.sControl.getPos()) {
+        switch (AppParams.sControlBean.getPos()) {
             case Constant.Position.LEFT_ON:
                 mRbLeft.setChecked(true);
                 break;
@@ -117,7 +97,7 @@ public class MainActivity extends BaseSysBleCheckActivity implements View.OnClic
         }
 
         //设置模式
-        switch (AppParams.sControl.getMode()) {
+        switch (AppParams.sControlBean.getMode()) {
             case Constant.Model.mode_default:
                 setSelectModel(null);
                 break;
@@ -144,10 +124,10 @@ public class MainActivity extends BaseSysBleCheckActivity implements View.OnClic
 
         //设置时间
         mSklTime.setLimit(Constant.MIN_TIME, Constant.MAX_TIME, "");
-        mSklTime.setProgress(AppParams.sControl.getTime());
+        mSklTime.setProgress(AppParams.sControlBean.getTime());
         //设置档位
         mSltGear.setLimit(Constant.MIN_GEAR, Constant.MAX_GEAR, "档位：%1d档");
-        mSltGear.setProgress(AppParams.sControl.getGear());
+        mSltGear.setProgress(AppParams.sControlBean.getGear());
     }
 
     /**
@@ -157,18 +137,25 @@ public class MainActivity extends BaseSysBleCheckActivity implements View.OnClic
         mRgPos.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
+
+                int pos = Constant.Position.POS_WAIT;
                 switch (checkedId) {
                     case R.id.rb_left:
-                        AppParams.sControl.setPos(Constant.Position.LEFT_ON);
+                        pos = Constant.Position.LEFT_ON;
                         break;
                     case R.id.rb_all:
-                        AppParams.sControl.setPos(Constant.Position.ALL_ON);
+                        pos = Constant.Position.ALL_ON;
                         break;
                     case R.id.rb_right:
-                        AppParams.sControl.setPos(Constant.Position.RIGHT_ON);
+                        pos = Constant.Position.RIGHT_ON;
                         break;
                     default:
                 }
+                if (pos == AppParams.sControlBean.getPos()) {
+                    return;
+                }
+                AppParams.sControlBean.setPos(pos);
+                sendControlData();
 
             }
         });
@@ -184,14 +171,22 @@ public class MainActivity extends BaseSysBleCheckActivity implements View.OnClic
         mSklTime.setOnProgressChangeLister(new SeekLayout.OnProgressChangeLister() {
             @Override
             public void onProgressChange(int progress) {
-                AppParams.sControl.setTime(progress);
+                if (progress == AppParams.sControlBean.getTime()) {
+                    return;
+                }
+                AppParams.sControlBean.setTime(progress);
+                sendControlData();
             }
         });
 
         mSltGear.setOnProgressChangeLister(new SeekLayout.OnProgressChangeLister() {
             @Override
             public void onProgressChange(int progress) {
-                AppParams.sControl.setGear(progress);
+                if (progress == AppParams.sControlBean.getGear()) {
+                    return;
+                }
+                AppParams.sControlBean.setGear(progress);
+                sendControlData();
             }
         });
 
@@ -202,28 +197,34 @@ public class MainActivity extends BaseSysBleCheckActivity implements View.OnClic
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.tv_center:
-                AppParams.sControl.setMode(Constant.Model.mode6);
+                AppParams.sControlBean.setMode(Constant.Model.mode6);
                 setSelectModel(v);
+                sendControlData();
                 break;
             case R.id.tv_mode1:
-                AppParams.sControl.setMode(Constant.Model.mode1);
+                AppParams.sControlBean.setMode(Constant.Model.mode1);
                 setSelectModel(v);
+                sendControlData();
                 break;
             case R.id.tv_mode2:
-                AppParams.sControl.setMode(Constant.Model.mode2);
+                AppParams.sControlBean.setMode(Constant.Model.mode2);
                 setSelectModel(v);
+                sendControlData();
                 break;
             case R.id.tv_mode3:
-                AppParams.sControl.setMode(Constant.Model.mode3);
+                AppParams.sControlBean.setMode(Constant.Model.mode3);
                 setSelectModel(v);
+                sendControlData();
                 break;
             case R.id.tv_mode4:
-                AppParams.sControl.setMode(Constant.Model.mode4);
+                AppParams.sControlBean.setMode(Constant.Model.mode4);
                 setSelectModel(v);
+                sendControlData();
                 break;
             case R.id.tv_mode5:
-                AppParams.sControl.setMode(Constant.Model.mode5);
+                AppParams.sControlBean.setMode(Constant.Model.mode5);
                 setSelectModel(v);
+                sendControlData();
                 break;
             case R.id.tv_blue:
             case R.id.flt_cover: //已经连接得设备点击
@@ -243,8 +244,7 @@ public class MainActivity extends BaseSysBleCheckActivity implements View.OnClic
 
     @Override
     protected void onDestroy() {
-        ObserverManager.getInstance().deleteObserver(this);
-        BlueUtils.destroy();
+        BlueUtils.sUtils.destroy();
         super.onDestroy();
 
     }
@@ -261,7 +261,7 @@ public class MainActivity extends BaseSysBleCheckActivity implements View.OnClic
                 && v.isSelected()) {
             //选中已经选中得 则表示待机状态
             v.setSelected(false);
-            AppParams.sControl.setMode(Constant.Model.mode_default);
+            AppParams.sControlBean.setMode(Constant.Model.mode_default);
             return;
         }
 
@@ -275,11 +275,59 @@ public class MainActivity extends BaseSysBleCheckActivity implements View.OnClic
         if (v != null) {
             v.setSelected(true);
         }
+
     }
 
+    @SuppressLint("HandlerLeak")
+    Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            Control.generateReqData();
+        }
+    };
 
-    @Override
+    @SuppressLint("CheckResult")
+    private void sendControlData() {
+        mHandler.removeMessages(1);
+        Message msg = mHandler.obtainMessage();
+        msg.what = 1;
+        mHandler.sendMessageDelayed(msg, Constant.CONTROL_INTERVAL);
+    }
+
+    /**
+     * 断开连接 连接成功
+     *
+     * @param bleDevice
+     */
+    @Subscribe(
+            thread = EventThread.MAIN_THREAD,
+            tags = {@Tag(EventType.BLE_DIS_CONNECTION), @Tag(EventType.BLE_START_SUCCESS)})
     public void disConnected(BleDevice bleDevice) {
-        setBlueData();
+        if (mTvBlue == null) {
+            return;
+        }
+        //已经连接状态
+        if (BlueUtils.sUtils.getDeviceConnected()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                ColorStateList csl = getResources().getColorStateList(R.color.colorAccent);
+                mTvBlue.setCompoundDrawableTintList(csl);
+            }
+
+            mTvBlue.setText(BlueUtils.sUtils.getConnectedDevice().getName());
+            mTvBlue.setTextColor(getResources().getColor(R.color.colorAccent));
+            mFltCover.setVisibility(View.GONE);
+        } else {
+            //未连接
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                ColorStateList csl = getResources().getColorStateList(R.color.black);
+                mTvBlue.setCompoundDrawableTintList(csl);
+            }
+            mTvBlue.setText(R.string.no_connect);
+            mTvBlue.setTextColor(getResources().getColor(R.color.holo_light));
+            mFltCover.setVisibility(View.VISIBLE);
+        }
     }
+
+
 }

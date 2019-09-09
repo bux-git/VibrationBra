@@ -1,18 +1,14 @@
 package com.example.vibrationbra.bean;
 
-import android.util.Log;
-
-import com.example.vibrationbra.Constant;
-
-import java.util.Arrays;
+import com.example.vibrationbra.localdata.Constant;
 
 /**
  * @description：
  * @author：bux on 2019/9/3 16:07
  * @email: 471025316@qq.com
  */
-public class Control {
-    private static final String TAG = "Control";
+public class ControlBean {
+    private static final String TAG = "ControlBean";
     //头码
     private int headCode = Constant.HEAD_CODE;
     //状态
@@ -51,7 +47,6 @@ public class Control {
 
     public void setMode(int mode) {
         this.mode = mode;
-        checkData();
     }
 
 
@@ -61,7 +56,6 @@ public class Control {
 
     public void setGear(int gear) {
         this.gear = gear;
-        checkData();
     }
 
     public int getPos() {
@@ -70,7 +64,6 @@ public class Control {
 
     public void setPos(int pos) {
         this.pos = pos;
-        checkData();
     }
 
     public int getTime() {
@@ -79,54 +72,14 @@ public class Control {
 
     public void setTime(int time) {
         this.time = time;
-        checkData();
     }
 
-    public int getPreByte() {
-        return preByte;
-    }
 
-    public void setPreByte(int preByte) {
-        this.preByte = preByte;
-    }
-
-    private void checkData() {
-
-        generateData();
-    }
-
-    private void generateData() {
-
-        int p = this.pos;
-        int t = this.time;
-        int g = this.gear;
-
-        //未选中时直接进入开机待机状态
-        if (mode == Constant.Model.mode_default) {
-            p = Constant.Position.POS_WAIT;
-            t = Constant.TIME_WAIT;
-            g = Constant.WAIT_GEAR;
-        }
-
-
-        byte[] reqData = {
-                (byte) headCode, (byte) headCode,//头码
-                (byte) state,//状态码
-                (byte) mode,//模式
-                (byte) g,//档位
-                (byte) p,//边
-                (byte) t,//定时时间
-                0, 0,//预留
-                (byte) preByte//校验码
-        };
-        Log.d(TAG,  toString()+"\r\n"+ Arrays.toString(reqData));
-        //本地存储
-    }
 
 
     @Override
     public String toString() {
-        return "Control{" +
+        return "ControlBean{" +
                 "headCode=" + headCode +
                 ", state=" + state +
                 ", mode=" + mode +

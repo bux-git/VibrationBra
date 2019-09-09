@@ -33,14 +33,14 @@
                 android:resource="@xml/temp_file_provider"/>
         </provider>
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".BlueSearchActivity" />
+        <activity android:name=".ui.BlueSearchActivity" />
     </application>
 
 </manifest>

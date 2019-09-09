@@ -7,7 +7,7 @@ import android.content.Intent;
 import com.blankj.utilcode.util.ToastUtils;
 import com.example.common.base.BaseActivity;
 import com.example.common.util.PermissionUtils;
-import com.example.vibrationbra.BlueUtils;
+import com.example.vibrationbra.util.BlueUtils;
 import com.example.vibrationbra.R;
 
 import androidx.annotation.Nullable;
@@ -41,9 +41,9 @@ public abstract class BaseSysBleCheckActivity extends BaseActivity {
     protected void checkBlue(OnCheckResult onCheckResult) {
         mCheckResult = onCheckResult;
 
-        if (!BlueUtils.isBlueEnable()) {
+        if (!BlueUtils.sUtils.isBlueEnable()) {
             ToastUtils.showShort("蓝牙未打开!");
-            BlueUtils.openBlue(this, OPEN_BLUE_REQUEST_CODE);
+            BlueUtils.sUtils.openBlue(this, OPEN_BLUE_REQUEST_CODE);
         } else {
             generateLocation(onCheckResult);
         }

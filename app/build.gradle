@@ -62,4 +62,7 @@ dependencies {
 
     //BaseAdapter
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.46'
+
+    //RxBus
+    implementation 'com.hwangjr.rxbus:rxbus:2.0.0'
 }
