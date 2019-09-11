@@ -50,7 +50,7 @@ public class Control {
                 (byte) preKey//校验码
         };
         Log.d(TAG, Arrays.toString(reqData));
-        BlueUtils.sUtils.write(BlueUtils.sUtils.getConnectedDevice(), "", "", reqData, new BleWriteCallback() {
+        BlueUtils.sUtils.write(BlueUtils.sUtils.getConnectedDevice(), Constant.UUID_SERVICE, Constant.UUID_CHARACTERISTIC, reqData, new BleWriteCallback() {
             @Override
             public void onWriteSuccess(int current, int total, byte[] justWrite) {
                 // 发送数据到设备成功（分包发送的情况下，可以通过方法中返回的参数可以查看发送进度）

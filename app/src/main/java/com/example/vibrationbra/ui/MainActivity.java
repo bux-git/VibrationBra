@@ -68,7 +68,6 @@ public class MainActivity extends BaseSysBleCheckActivity implements View.OnClic
 
     @Override
     protected void init() {
-        mFltCover.setVisibility(View.GONE);
         //初始化蓝牙设备
         BlueUtils.instance();
         BlueUtils.sUtils.initGlobal();

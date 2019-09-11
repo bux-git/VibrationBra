@@ -10,18 +10,29 @@ import java.util.UUID;
 public class Constant {
 
     /**
+     * 操作uuid
+     */
+    public static final String UUID_CHARACTERISTIC = "00001801-0000-1000-8000-00805f9b34fb";
+    public static final String UUID_SERVICE = "00002a05-0000-1000-8000-00805f9b34fb";
+    /**
+     * 电量uuid
+     */
+    public static final String UUID_CHARACTERISTIC_BATTERY = "0000180F-0000-1000-8000-00805f9b34fb";
+    public static final String UUID_SERVICE_BATTERY = "00002a19-0000-1000-8000-00805f9b34fb";
+
+    /**
      * 蓝牙搜索条件设置
      * 服务UUID
      */
     public static final UUID[] UUID_SEARCH = null;
-    //广播名称
+    //广播名称 蓝牙
     public static final String[] BLUE_NAME = {""};
     //连接后断开自动重连
     public static final boolean AUTO_CONNECT = false;
     //扫描超时
-    public static final long SCAN_TIME_OUT = 10*1000;
+    public static final long SCAN_TIME_OUT = 10 * 1000;
     //发送操作命令 时间间隔 MS
-    public static final int CONTROL_INTERVAL=100;
+    public static final int CONTROL_INTERVAL = 100;
 
     //头码状态
     public static final int HEAD_CODE = 0XAA;
