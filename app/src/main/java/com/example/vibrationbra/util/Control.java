@@ -55,6 +55,7 @@ public class Control {
             public void onWriteSuccess(int current, int total, byte[] justWrite) {
                 // 发送数据到设备成功（分包发送的情况下，可以通过方法中返回的参数可以查看发送进度）
                 ToastUtils.showShort("发送数据到设备成功");
+                //本地存储
                 AppParams.setControlBean(cb);
             }
 

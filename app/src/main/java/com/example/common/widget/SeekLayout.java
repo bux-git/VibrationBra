@@ -14,7 +14,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.vibrationbra.R;
-import com.example.vibrationbra.localdata.Constant;
 
 import androidx.annotation.Nullable;
 
@@ -89,7 +88,7 @@ public class SeekLayout extends LinearLayout implements View.OnClickListener {
                 if (!fromUser) {
                     return;
                 }
-                setExplainText(progress);
+                setExplainText(progress, false);
             }
 
             @Override
@@ -103,7 +102,6 @@ public class SeekLayout extends LinearLayout implements View.OnClickListener {
                 setProgressAndText(seekBar.getProgress());
             }
         });
-
     }
 
     private void initData() {
@@ -135,8 +133,9 @@ public class SeekLayout extends LinearLayout implements View.OnClickListener {
 
 
     private void setProgressAndText(float v2) {
-        setExplainText((int) (v2));
         setMathProgress((int) (v2));
+        setExplainText((int) (v2), true);
+
     }
 
 
@@ -157,7 +156,7 @@ public class SeekLayout extends LinearLayout implements View.OnClickListener {
      *
      * @param progress
      */
-    public void setExplainText(int progress) {
+    public void setExplainText(int progress, boolean isSend) {
         //显示处理之后得
         progress = getRealProgress(progress);
         if (progress < min) {
@@ -166,6 +165,9 @@ public class SeekLayout extends LinearLayout implements View.OnClickListener {
             progress = max;
         }
         mTvExplain.setText(String.format(explainFormat, progress));
+        if (!isSend) {
+            return;
+        }
         sendMessage(progress);
     }
 
@@ -175,7 +177,13 @@ public class SeekLayout extends LinearLayout implements View.OnClickListener {
         return progress;
     }
 
-
+    /**
+     * 设置数据
+     *
+     * @param min
+     * @param max
+     * @param explainFormat
+     */
     public void setLimit(int min, int max, String explainFormat) {
         this.min = min;
         this.max = max;
@@ -199,8 +207,9 @@ public class SeekLayout extends LinearLayout implements View.OnClickListener {
         Message message = mHandler.obtainMessage();
         message.what = 1;
         message.arg1 = progress;
-        mHandler.sendMessageDelayed(message, Constant.CONTROL_INTERVAL);
+        mHandler.sendMessageDelayed(message, 500);
     }
+
 
     public interface OnProgressChangeLister {
         void onProgressChange(int progress);

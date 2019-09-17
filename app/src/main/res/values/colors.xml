@@ -42,6 +42,7 @@
 
     <color name="theme_red">#ce3d3e</color>
     <color name="theme_blue">#1296db</color>
-    <color name="theme_light">#8ed3f7</color>
+    <color name="theme_light">#CAE6CA</color>
     <color name="theme_blue_light">#881296db</color>
+    <color name="theme_blue_light2">#FFACC9EC</color>
 </resources>
